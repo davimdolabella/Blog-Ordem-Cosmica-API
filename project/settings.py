@@ -1,6 +1,6 @@
 
 from pathlib import Path
-
+from datetime import timedelta
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = 'django-insecure-@yn*r979sg#7e#9qq^8ng2efmn)i65jdoe!jt8r!4gd@y#yh7#'
@@ -89,3 +89,17 @@ MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    )
+}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'BLACKLIST_AFTER_ROTATION': False,
+    'SIGNING_KEY': 'nbdsnbdnasldkjjjbenjh3ue;,3mkjij29',
+    'AUTH_HEADER_TYPES': ('Bearer',),
+}
