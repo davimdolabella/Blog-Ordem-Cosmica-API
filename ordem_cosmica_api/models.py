@@ -5,7 +5,7 @@ class Profile(models.Model):
     user = models.OneToOneField(
         User, on_delete=models.CASCADE
     )
-    image = models.ImageField(upload_to='profiles/images/%Y/%m/%d/')
+    image = models.ImageField(upload_to='profiles/images/%Y/%m/%d/', default='')
     def __str__(self):
         return self.user.username
     
