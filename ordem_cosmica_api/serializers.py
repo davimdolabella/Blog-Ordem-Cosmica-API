@@ -21,6 +21,18 @@ class ProfileSerializer(serializers.ModelSerializer):
         user = models.User.objects.create_user(**user_data)  
         profile = models.Profile.objects.create(user=user, **validated_data) 
         return profile
+    
+    def update(self, instance, validated_data):
+        user = instance.user
+        if validated_data.get('email'):
+            user.email = validated_data.get('email')
+        if validated_data.get('username'):
+            user.username = validated_data.get('username')
+        if validated_data.get('password'):
+            user.set_password(validated_data.get('password'))
+        user.save()
+        return super().update(instance, validated_data)
+    
     def validate_password(self, value):
         regex = re.compile(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).{8,}$')
 
@@ -29,6 +41,14 @@ class ProfileSerializer(serializers.ModelSerializer):
                 'Password must have at least one uppercase letter, '
                 'one lowercase letter and one number. The length should be '
                 'at least 8 characters.'
+            ),
+                code='invalid'
+            )
+        return value
+    def validate_username(self, value):
+        if models.User.objects.filter(username=value).first():
+            raise ValidationError((
+                'This username is already in use.'
             ),
                 code='invalid'
             )

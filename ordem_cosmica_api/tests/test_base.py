@@ -3,21 +3,6 @@ from ordem_cosmica_api.models import Article, Profile, User, Comment
 from django.urls import reverse
 
 class OrdemCosmicaAPIMixin:
-    def make_author(
-        self,
-        username='username',
-        password='123456',
-        email='username@email.com',
-    ):
-        user = User.objects.create_user(
-            username=username,
-            password=password,
-            email=email,
-        )
-        return Profile.objects.create(
-            user = user
-        )
-
     default_user_data = {
         'username': 'DefaultUser',
         'password': 'DefaultPassword123',
@@ -47,18 +32,7 @@ class OrdemCosmicaAPIMixin:
                 data=data,
                 HTTP_AUTHORIZATION=f'Bearer {access_token}'
             )
-    
-    def get_user_token_pair(self, user_data):
-        response = self.client.post(
-            reverse('ordem-cosmica-api:token_obtain_pair'),
-            data=user_data
-        )
-        return {
-            'access_token': response.data.get('access'),
-            'refresh_token': response.data.get('refresh'),
-            'response': response
-        }
-        
+
     def get_delete_response(self, url, access_token=None): 
         if not access_token:
             return self.client.delete(url)
@@ -67,7 +41,62 @@ class OrdemCosmicaAPIMixin:
                 url,
                 HTTP_AUTHORIZATION=f'Bearer {access_token}'
             )
+    #token
+    def get_token_pair_url(self):
+        return reverse('ordem-cosmica-api:token_obtain_pair')
+    def get_token_refresh_url(self):
+        return reverse('ordem-cosmica-api:token_refresh')
+    def get_token_verify_url(self):
+        return reverse('ordem-cosmica-api:token_verify')
+    def get_user_token_pair(self, user_data):
+        response = self.client.post(
+            self.get_token_pair_url(),
+            data=user_data
+        )
+        return {
+            'access_token': response.data.get('access'),
+            'refresh_token': response.data.get('refresh'),
+            'response': response
+        }
+    
+    def get_user_new_access_token(self, refresh_token=""):
+        response = self.client.post(
+            self.get_token_refresh_url(),
+            data={'refresh': f'{refresh_token}'}
+        )
+        return{
+            'access_token': response.data.get('access'),
+            'response': response
+        }
         
+    #profile
+    def get_profile_list_url(self):
+        return reverse('ordem-cosmica-api:profile-list')
+    
+    def get_profile_detail_url(self,pk):
+        return reverse('ordem-cosmica-api:profile-detail', kwargs={'pk':pk})
+
+    def make_author(
+        self,
+        username='username',
+        password='123456',
+        email='username@email.com',
+    ):
+        user = User.objects.create_user(
+            username=username,
+            password=password,
+            email=email,
+        )
+        return Profile.objects.create(
+            user = user
+        )
+    
+    def make_author_in_batch(self, qtd=10):
+        authors = []
+        for i in range(qtd):
+            author = self.make_author(username=f'u{i}')
+            authors.append(author)
+        return authors
     # article
     def get_article_list_url(self):
         return reverse('ordem-cosmica-api:article-list')
@@ -104,7 +133,7 @@ class OrdemCosmicaAPIMixin:
             articles.append(article)
         return articles
     
-
+    # comment
     def get_comment_list_url(self):
         return reverse('ordem-cosmica-api:comment-list')
     def get_comment_detail_url(self, pk):

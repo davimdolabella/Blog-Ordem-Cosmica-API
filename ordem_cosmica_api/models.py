@@ -18,7 +18,7 @@ class Article(models.Model):
     image = models.ImageField(upload_to='articles/images/%Y/%m/%d/', blank=True, default='')  # Opcional
     created_at = models.DateTimeField(auto_now_add=True)
     author = models.ForeignKey(
-        Profile, on_delete=models.SET_NULL, null=False, blank=False
+        Profile, on_delete=models.SET_NULL, null=True, blank=False
     )  
 
     def __str__(self):

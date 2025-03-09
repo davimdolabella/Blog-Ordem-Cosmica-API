@@ -37,6 +37,8 @@ class ProfileViewSet(ModelViewSet):
     def get_permissions(self):
         if self.request.method in ['PATCH', 'DELETE']:
             return [permissions.IsOwner(),]
+        if self.request.method in ['POST']:
+            return [permissions.IsAnonymousUser(),]
         return super().get_permissions()
 
 
