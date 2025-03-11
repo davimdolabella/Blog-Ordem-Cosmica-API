@@ -1,8 +1,5 @@
 from rest_framework.test import APITestCase
-from django.urls import reverse
 from ordem_cosmica_api.tests.test_base import  OrdemCosmicaAPIMixin
-from unittest.mock import patch
-from django.core.files.uploadedfile import SimpleUploadedFile
 class TestAPIToken(APITestCase, OrdemCosmicaAPIMixin):
     def test_user_need_credentials_to_obtain_pair_token(self):
         data ={}
@@ -85,7 +82,6 @@ class TestAPIToken(APITestCase, OrdemCosmicaAPIMixin):
 
     def test_verify_with_invalid_token(self):
         response = self.get_post_response(self.get_token_verify_url(), data={'token':'invalid_token'})
-        print(response.data)
         self.assertEqual(
             response.status_code,
             401
@@ -93,4 +89,22 @@ class TestAPIToken(APITestCase, OrdemCosmicaAPIMixin):
         self.assertIn(
             'Token is invalid or expired',
             response.data.get('detail')
+        )
+    
+    def test_verify_with_correct_access_and_refresh_token(self):
+        data = {
+            'username':'username',
+            'password':'Pass123'
+        }
+        self.make_author(**data)
+        tokens = self.get_user_token_pair(data)
+        response_access = self.get_post_response(self.get_token_verify_url(), data={'token':tokens.get('access_token')})
+        response_refresh = self.get_post_response(self.get_token_verify_url(), data={'token':tokens.get('refresh_token')})
+        self.assertEqual(
+            response_access.status_code,
+            200
+        )
+        self.assertEqual(
+            response_refresh.status_code,
+            200
         )
